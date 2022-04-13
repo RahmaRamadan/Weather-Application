@@ -1,19 +1,32 @@
-// Setup empty JS object to act as endpoint for all routes
+// THIS IS THE SERVER SIDE FILE
+
+/* Empty JS object to act as endpoint for all routes */
 projectData = {};
 
-// Require Express to run server and routes
+// Express to run server and routes
+const express = require('express');
 
 // Start up an instance of app
+const app = express();
+app.use(express.json())
 
-/* Middleware*/
-//Here we are configuring express to use body-parser as middle-ware.
+/* Dependencies */
+const bodyParser = require('body-parser')
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(bodyParser.json());
 
-// Cors for cross origin allowance
+// Cors for cross origin allowance, connect client and server side
+const cors = require('cors');
+const { response } = require('express');
+app.use(cors());
 
-// Initialize the main project folder
+/* Initializing the main project folder */
 app.use(express.static('website'));
 
+// lisener function
+function listening(){
+    console.log("server running"); 
+}
 
-// Setup Server
+// server listen "backend part"
+const server = app.listen(3000, listening)
