@@ -29,18 +29,18 @@ function listening() {
 }
 //-------------------------------------------------------------------------
 
-// GET Route
+// get request 
 app.get("/all", getAllProjects);
-// Callback function to complete GET '/all'
+
 const getAllProjects = (req, res) => {
   return res.status(200).send(projectData);
 };
 
 //-------------------------------------------------------------------------
 
-// GET Route
+// post request 
 app.post("/add", postData);
-// Callback function to complete POST '/add'
+
 const postData = (req, res) => {
   projectData = req.body;
   console.log(projectData);

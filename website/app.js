@@ -9,81 +9,98 @@ const server = "http://127.0.0.1:3000";
 // Create a new date instance dynamically with JS
 let d = new Date();
 let newDate = d.getMonth() + "." + d.getDate() + "." + d.getFullYear();
+//------------------------------------------------------------------------------------------------
 
-//---------------------------------------------------------------------------
-const getCountryWeather = () => {
-  //get value after click on the button
-  const zipCode = document.getElementById("zip").value;
+// Event listener to add function to existing HTML DOM element
 
-  getWeatherData(zipCode).then((data) => {
-    //check recieved data
-    if (data) {
-      const {
-        main: { temp },
-        name: city,
-        weather: [{ description }],
-      } = data;
+document.getElementById("generate").addEventListener("click", generate_weather);
 
-      const dataInfo = {
-        newDate,
-        city,
-        temp: Math.round(temp), // integer temp
-        description,
-      };
+/* Function called by event listener */
 
-      postData(server + "/add", dataInfo);
-      getData();
-      document.getElementById("entry").style.opacity = 3;
-    }
-  });
-};
-// fire get weather function on click event on generate button
-document
-  .getElementById("generate")
-  .addEventListener("click", getCountryWeather);
+function generate_weather() {
+  //check recieved data
 
-//get weather api data
-const getWeatherData = async (zipCode) => {
+  const zip = document.getElementById("zip").value;
+
+  weatherD(baseURL, zip, apiKey)
+    .then(function (res) {
+      console.log(res);
+      // add data to POST request
+      postData("/add", { date: newDate, temp: Math.round(res.main.temp), description: res.weather, city: res.name});
+    })
+
+    .then(function (res) {
+      // call updateUI to update browser content
+      updateUI();
+      document.getElementById("entry").style.opacity = 1;
+    });
+}
+
+/* Function to GET Web API Data*/
+const weatherD = async (baseURL, zip, apiKey) => {
+  const res = await fetch(baseURL + zip + apiKey);
   try {
-    const res = await fetch(baseURL + zipCode + apiKey);
-    const data = await res.json();
-    if (data.cod != 200) {
-      throw data.message;
-    }
-    return data;
-  } catch (err) {
-    console.log(err);
+    const weather_data = await res.json();
+    console.log("weather data: ", weather_data)
+    return weather_data;
+  } catch (error) {
+    console.log("error", error);
   }
 };
+/* Function to POST data */
 
-// Function to POST data
-const postData = async (url = "", dataInfo = {}) => {
-  const res = await fetch(url, {
+const postData = async (url = "", info = {}) => {
+  console.log("infooo: ",info)
+
+  const feelcontent = document.getElementById("feelings").value;
+  console.log("felllllllll: ",feelcontent)
+
+  const req = await fetch(url, {
     method: "POST",
+
     headers: {
-      "Content-Type": "application/json",
+      "Content-Type": "application/json;charset=UTF-8",
     },
-    body: JSON.stringify(dataInfo),
+
+    body: JSON.stringify({
+      date: info.date,
+
+      temp: info.temp,
+
+      content: feelcontent,
+
+      city: info.city,
+
+      description: info.description[0].description,
+      
+    }),
   });
 
   try {
-    const result = await res.json();
-    return result;
-  } catch (err) {
-    console.log(err);
+    const Data = await req.json();
+
+    return Data;
+  } catch (error) {
+    console.log(error);
   }
 };
 
-// get data and update UI
-const getData = async () => {
-  const res = await fetch(server + "/all");
+const updateUI = async () => {
+  const request = await fetch("/all");
+
   try {
-    const data = await res.json();
-    document.getElementById("date").innerHTML = data.newDate;
-    document.getElementById("city").innerHTML = data.city;
-    document.getElementById("temp").innerHTML = data.temp + "&degC";
-    document.getElementById("description").innerHTML = data.description;
-  } catch (err) {
-    console.log(err);
+    const receivedAllData = await request.json();
+
+    // show icons on the page
+    // update new entry values
+    document.getElementById("temp").innerHTML = receivedAllData.temp + "&degC";
+    document.getElementById("description").innerHTML = receivedAllData.description;
+    document.getElementById("date").innerHTML = receivedAllData.date;
+    document.getElementById("city").innerHTML = receivedAllData.city;
+    document.getElementById("content").innerHTML = receivedAllData.content;
+
+
+  } catch (error) {
+    console.log("error", error);
   }
 };
